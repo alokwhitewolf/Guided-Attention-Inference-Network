@@ -17,7 +17,8 @@ class GAIN(chainer.Chain):
 				break
 
 		gcam = self.get_gcam(h, getattr(self, final_conv_layer), class_id)
-		return h, gcam
+		loss = F.softmax_cross_entropy(h, cl_target)
+		return loss, gcam
 
 
 	def get_gcam(self, end_output, conv_link, class_id=None):
