@@ -6,6 +6,7 @@ class GAIN(chainer.Chain):
 	def __init__(self):
 		super(GAIN, self).__init__()
 
+
 	def stream_cl(self, inp, cl_target, final_conv_layer, grad_target_layer='prob', class_id=None):
 		h = chainer.Variable(inp)
 		# activations = {'input': h}
@@ -19,6 +20,10 @@ class GAIN(chainer.Chain):
 		gcam = self.get_gcam(h, getattr(self, final_conv_layer), class_id)
 		loss = F.softmax_cross_entropy(h, cl_target)
 		return loss, gcam
+
+
+	def stream_am(self, masked_image, cl_target, class_id):
+		pass
 
 
 	def get_gcam(self, end_output, conv_link, class_id=None):
@@ -36,10 +41,18 @@ class GAIN(chainer.Chain):
 		self.cleargrads()
 		return F.resize_images(F.convolution_2d(weights, grad, None, 1, 0), (self.size, self.size))
 
+
 	def set_init_grad(self, var, class_id=None):
 		var.grad = self.xp.zeros_like(var.data)
 		if class_id is None:
 			var.grad[0][F.argmax(var).data] = 1
 		else:
 			var.grad[0][class_id] = 1
+
+	def mask_image(self, gcam, img, sigma, w):
+		mask = F.squeeze(F.sigmoid(-w * (gcam - sigma)))
+		for channel_depth in range(img.shape[-3]):
+			img[0][channel_depth]*mask
+		return img
+
 
