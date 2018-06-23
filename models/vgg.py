@@ -7,7 +7,8 @@ from GAIN import GAIN
 
 class VGG16_GAIN(GAIN):
 
-	def __init__(self):
+	def __init__(self, final_conv_layer='conv5_3',
+	             grad_target_layer='prob'):
 		super(VGG16_GAIN, self).__init__()
 		with self.init_scope():
 			self.conv1_1 = L.Convolution2D(3, 64, 3, 1, 1)
@@ -58,6 +59,8 @@ class VGG16_GAIN(GAIN):
 			('fc8', [self.fc8]),
 			('prob', [F.softmax]),
 		])
+		self.final_conv_layer = final_conv_layer
+		self.grad_target_layer = grad_target_layer
 
 def _max_pooling_2d(x):
 	return F.max_pooling_2d(x, ksize=2)

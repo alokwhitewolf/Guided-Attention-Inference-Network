@@ -5,15 +5,20 @@ import chainer.functions as F
 class GAIN(chainer.Chain):
 	def __init__(self):
 		super(GAIN, self).__init__()
+		# To override in child class
+		self.size = None  # Size of images
+		self.functions = None  # Refer files in /models
+		self.final_conv_layer = None
+		self.grad_target_layer = None
 
-	def stream_cl(self, inp, final_conv_layer, grad_target_layer='prob', class_id=None):
+	def stream_cl(self, inp, class_id=None):
 		h = chainer.Variable(inp)
 		for key, funcs in self.functions.items():
 			for func in funcs:
 				h = func(h)
-			if key == final_conv_layer:
+			if key == self.final_conv_layer:
 				activation = h
-			if key == grad_target_layer:
+			if key == self.grad_target_layer:
 				break
 
 		gcam = self.get_gcam(h, activation, class_id)
@@ -27,17 +32,17 @@ class GAIN(chainer.Chain):
 
 		return h, class_id
 
-	def stream_ext(self, inp,  final_conv_layer, grad_target_layer='prob', class_id=None):
+	def stream_ext(self, inp,  class_id=None):
 		h = chainer.Variable(inp)
 		for key, funcs in self.functions.items():
 			for func in funcs:
 				h = func(h)
-			if key == final_conv_layer:
+			if key == self.final_conv_layer:
 				activation = h
-			if key == grad_target_layer:
+			if key == self.grad_target_layer:
 				break
 			gcam = self.get_gcam(h, activation, class_id)
-			mask = self.get_mask(self, gcam)
+			mask = self.get_mask(gcam)
 			return mask
 
 	def get_gcam(self, end_output, activations, class_id=None):
@@ -54,7 +59,6 @@ class GAIN(chainer.Chain):
 
 		self.cleargrads()
 		return F.resize_images(F.relu(F.convolution_2d(weights, grad, None, 1, 0)), (self.size, self.size))
-
 
 	def set_init_grad(self, var, class_id=None):
 		var.grad = self.xp.zeros_like(var.data)
