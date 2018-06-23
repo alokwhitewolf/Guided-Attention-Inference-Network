@@ -19,7 +19,6 @@ class GAIN(chainer.Chain):
 		gcam = self.get_gcam(h, activation, class_id)
 		return gcam, h
 
-
 	def stream_am(self, masked_image, class_id):
 		h = chainer.Variable(masked_image)
 		for key, funcs in self.functions.items():
@@ -28,6 +27,18 @@ class GAIN(chainer.Chain):
 
 		return h, class_id
 
+	def stream_ext(self, inp,  final_conv_layer, grad_target_layer='prob', class_id=None):
+		h = chainer.Variable(inp)
+		for key, funcs in self.functions.items():
+			for func in funcs:
+				h = func(h)
+			if key == final_conv_layer:
+				activation = h
+			if key == grad_target_layer:
+				break
+			gcam = self.get_gcam(h, activation, class_id)
+			mask = self.get_mask(self, gcam)
+			return mask
 
 	def get_gcam(self, end_output, activations, class_id=None):
 		self.cleargrads()
@@ -52,12 +63,14 @@ class GAIN(chainer.Chain):
 		else:
 			var.grad[0][class_id] = 1
 
-	def get_mask(self, gcam, sigma, w):
+	@staticmethod
+	def get_mask(gcam, sigma=.5, w=10):
 		gcam = (gcam - F.min(gcam).data)/(F.max(gcam) - F.min(gcam)).data
 		mask = F.squeeze(F.sigmoid(w * (gcam - sigma)))
-
 		return mask
-	def mask_image(self, img, mask):
+
+	@staticmethod
+	def mask_image(img, mask):
 		broadcasted_mask = F.broadcast_to(mask, img.shape)
 		to_subtract = img*broadcasted_mask
 		return img - to_subtract
