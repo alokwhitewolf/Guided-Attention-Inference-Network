@@ -35,7 +35,7 @@ class VGG16_GAIN(GAIN):
 			self)
 
 		self.size = 224
-		self.functions = collections.OrderedDict([
+		self.GAIN_functions = collections.OrderedDict([
 			('conv1_1', [self.conv1_1, F.relu]),
 			('conv1_2', [self.conv1_2, F.relu]),
 			('pool1', [_max_pooling_2d]),
