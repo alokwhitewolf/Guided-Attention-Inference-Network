@@ -7,13 +7,13 @@ class GAIN(chainer.Chain):
 		super(GAIN, self).__init__()
 		# To override in child class
 		self.size = None  # Size of images
-		self.functions = None  # Refer files in /models
+		self.GAIN_functions = None  # Refer files in /models
 		self.final_conv_layer = None
 		self.grad_target_layer = None
 
 	def stream_cl(self, inp, class_id=None):
-		h = chainer.Variable(inp)
-		for key, funcs in self.functions.items():
+		h = inp
+		for key, funcs in self.GAIN_functions.items():
 			for func in funcs:
 				h = func(h)
 			if key == self.final_conv_layer:
@@ -24,17 +24,17 @@ class GAIN(chainer.Chain):
 		gcam = self.get_gcam(h, activation, class_id)
 		return gcam, h
 
-	def stream_am(self, masked_image, class_id):
-		h = chainer.Variable(masked_image)
-		for key, funcs in self.functions.items():
+	def stream_am(self, masked_image):
+		h = masked_image
+		for key, funcs in self.GAIN_functions.items():
 			for func in funcs:
 				h = func(h)
 
-		return h, class_id
+		return h
 
 	def stream_ext(self, inp,  class_id=None):
 		h = chainer.Variable(inp)
-		for key, funcs in self.functions.items():
+		for key, funcs in self.GAIN_functions.items():
 			for func in funcs:
 				h = func(h)
 			if key == self.final_conv_layer:
@@ -57,7 +57,7 @@ class GAIN(chainer.Chain):
 		weights = activations
 		weights = F.expand_dims(F.reshape(weights, (weights.shape[0]*weights.shape[1], weights.shape[2], weights.shape[3])), 0)
 
-		self.cleargrads()
+
 		return F.resize_images(F.relu(F.convolution_2d(weights, grad, None, 1, 0)), (self.size, self.size))
 
 	def set_init_grad(self, var, class_id=None):
@@ -67,14 +67,21 @@ class GAIN(chainer.Chain):
 		else:
 			var.grad[0][class_id] = 1
 
+	def mask_image(self, img, mask):
+		"""
+
+		:param img: Var of shape [H, W, C]
+		:param mask:
+		:return:
+		"""
+		img = F.expand_dims(img.transpose((2, 0, 1)), 0)
+		img = F.resize_images(img, (self.size, self.size))
+		broadcasted_mask = F.broadcast_to(mask, img.shape)
+		to_subtract = img*broadcasted_mask
+		return img - to_subtract
+
 	@staticmethod
 	def get_mask(gcam, sigma=.5, w=10):
 		gcam = (gcam - F.min(gcam).data)/(F.max(gcam) - F.min(gcam)).data
 		mask = F.squeeze(F.sigmoid(w * (gcam - sigma)))
 		return mask
-
-	@staticmethod
-	def mask_image(img, mask):
-		broadcasted_mask = F.broadcast_to(mask, img.shape)
-		to_subtract = img*broadcasted_mask
-		return img - to_subtract
