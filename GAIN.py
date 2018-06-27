@@ -80,8 +80,11 @@ class GAIN(chainer.Chain):
 		to_subtract = img*broadcasted_mask
 		return img - to_subtract
 
+	def register_functions(self, GAIN_functions):
+		self.GAIN_functions = GAIN_functions
+
 	@staticmethod
-	def get_mask(gcam, sigma=.5, w=10):
+	def get_mask(gcam, sigma=.15, w=4):
 		gcam = (gcam - F.min(gcam).data)/(F.max(gcam) - F.min(gcam)).data
 		mask = F.squeeze(F.sigmoid(w * (gcam - sigma)))
 		return mask
