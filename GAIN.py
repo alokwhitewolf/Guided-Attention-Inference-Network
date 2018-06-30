@@ -11,7 +11,7 @@ class GAIN(chainer.Chain):
 		self.final_conv_layer = None
 		self.grad_target_layer = None
 
-	def stream_cl(self, inp, class_id=None):
+	def stream_cl(self, inp):
 		h = inp
 		for key, funcs in self.GAIN_functions.items():
 			for func in funcs:
@@ -21,7 +21,7 @@ class GAIN(chainer.Chain):
 			if key == self.grad_target_layer:
 				break
 
-		gcam = self.get_gcam(h, activation, class_id)
+		gcam = self.get_gcam(h, activation, self.class_id)
 		return gcam, h
 
 	def stream_am(self, masked_image):
@@ -32,7 +32,7 @@ class GAIN(chainer.Chain):
 
 		return h
 
-	def stream_ext(self, inp,  class_id=None):
+	def stream_ext(self, inp):
 		h = chainer.Variable(inp)
 		for key, funcs in self.GAIN_functions.items():
 			for func in funcs:
@@ -41,13 +41,13 @@ class GAIN(chainer.Chain):
 				activation = h
 			if key == self.grad_target_layer:
 				break
-			gcam = self.get_gcam(h, activation, class_id)
+			gcam = self.get_gcam(h, activation)
 			mask = self.get_mask(gcam)
 			return mask
 
-	def get_gcam(self, end_output, activations, class_id=None):
+	def get_gcam(self, end_output, activations):
 		self.cleargrads()
-		self.set_init_grad(end_output, class_id)
+		self.set_init_grad(end_output)
 		end_output.backward(retain_grad=True)
 
 		grad = activations.grad_var
@@ -60,7 +60,8 @@ class GAIN(chainer.Chain):
 
 		return F.resize_images(F.relu(F.convolution_2d(weights, grad, None, 1, 0)), (self.size, self.size))
 
-	def set_init_grad(self, var, class_id=None):
+	def set_init_grad(self, var):
+		class_id = self.class_id
 		var.grad = self.xp.zeros_like(var.data)
 		if class_id is None:
 			var.grad[0][F.argmax(var).data] = 1
@@ -74,6 +75,8 @@ class GAIN(chainer.Chain):
 		:param mask:
 		:return:
 		"""
+		if self.device>=0:
+			img.to_gpu()
 		img = F.expand_dims(img.transpose((2, 0, 1)), 0)
 		img = F.resize_images(img, (self.size, self.size))
 		broadcasted_mask = F.broadcast_to(mask, img.shape)
