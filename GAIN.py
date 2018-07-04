@@ -11,7 +11,7 @@ class GAIN(chainer.Chain):
 		self.final_conv_layer = None
 		self.grad_target_layer = None
 
-	def stream_cl(self, inp):
+	def stream_cl(self, inp, label=None):
 		h = inp
 		for key, funcs in self.GAIN_functions.items():
 			for func in funcs:
@@ -21,8 +21,8 @@ class GAIN(chainer.Chain):
 			if key == self.grad_target_layer:
 				break
 
-		gcam = self.get_gcam(h, activation, self.class_id)
-		return gcam, h
+		gcam, class_id = self.get_gcam(h, activation, (inp.shape[-2], inp.shape[-1]), label=label)
+		return gcam, h, class_id
 
 	def stream_am(self, masked_image):
 		h = masked_image
@@ -45,49 +45,46 @@ class GAIN(chainer.Chain):
 			mask = self.get_mask(gcam)
 			return mask
 
-	def get_gcam(self, end_output, activations):
+	def get_gcam(self, end_output, activations, shape, label):
 		self.cleargrads()
-		self.set_init_grad(end_output)
+		class_id = self.set_init_grad(end_output, label)
 		end_output.backward(retain_grad=True)
-
 		grad = activations.grad_var
-		grad = F.average_pooling_2d(grad, grad.shape[2], 1)
+		grad = F.average_pooling_2d(grad, (grad.shape[-2], grad.shape[-1]), 1)
 		grad = F.expand_dims(F.reshape(grad, (grad.shape[0]*grad.shape[1], grad.shape[2], grad.shape[3])), 0)
-
 		weights = activations
 		weights = F.expand_dims(F.reshape(weights, (weights.shape[0]*weights.shape[1], weights.shape[2], weights.shape[3])), 0)
+		gcam = F.resize_images(F.relu(F.convolution_2d(weights, grad, None, 1, 0)), shape)
+		return gcam, class_id
 
-
-		return F.resize_images(F.relu(F.convolution_2d(weights, grad, None, 1, 0)), (self.size, self.size))
-
-	def set_init_grad(self, var):
-		class_id = self.class_id
+	def set_init_grad(self, var, label):
 		var.grad = self.xp.zeros_like(var.data)
-		if class_id is None:
-			var.grad[0][F.argmax(var).data] = 1
-		else:
+		if label is None:
+			class_id = F.argmax(var).data
 			var.grad[0][class_id] = 1
 
-	def mask_image(self, img, mask):
-		"""
+		else:
+			class_id = self.xp.random.choice(label, 1)
+			var.grad[0][class_id] = 1
+		return class_id
 
-		:param img: Var of shape [H, W, C]
-		:param mask:
-		:return:
-		"""
-		if self.device>=0:
-			img.to_gpu()
-		img = F.expand_dims(img.transpose((2, 0, 1)), 0)
-		img = F.resize_images(img, (self.size, self.size))
-		broadcasted_mask = F.broadcast_to(mask, img.shape)
-		to_subtract = img*broadcasted_mask
-		return img - to_subtract
+	def add_freeze_layers(self, links_list):
+		self.freezed_layers = links_list
 
-	def register_functions(self, GAIN_functions):
-		self.GAIN_functions = GAIN_functions
+	def freeze_layers(self):
+
+		for link in self.freezed_layers:
+			getattr(self, link).disable_update()
+
 
 	@staticmethod
-	def get_mask(gcam, sigma=.15, w=4):
+	def get_mask(gcam, sigma=.5, w=8): # .1, 4
 		gcam = (gcam - F.min(gcam).data)/(F.max(gcam) - F.min(gcam)).data
 		mask = F.squeeze(F.sigmoid(w * (gcam - sigma)))
 		return mask
+
+	@staticmethod
+	def mask_image(img, mask):
+		broadcasted_mask = F.broadcast_to(mask, img.shape)
+		to_subtract = img*broadcasted_mask
+		return img - to_subtract
