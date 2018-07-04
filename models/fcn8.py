@@ -1,4 +1,5 @@
 import os.path as osp
+import collections
 
 import chainer
 import chainer.functions as F
@@ -24,31 +25,31 @@ class FCN8s(GAIN):
 		}
 		super(FCN8s, self).__init__()
 		with self.init_scope():
-			self.conv1_1 = L.Convolution2D(3, 64, 3, 1, 100, **kwargs)
-			self.conv1_2 = L.Convolution2D(64, 64, 3, 1, 1, **kwargs)
+			self.conv1_1 = L.Convolution2D(3, 64, 3, 1, 1)
+			self.conv1_2 = L.Convolution2D(64, 64, 3, 1, 1)
 
-			self.conv2_1 = L.Convolution2D(64, 128, 3, 1, 1, **kwargs)
-			self.conv2_2 = L.Convolution2D(128, 128, 3, 1, 1, **kwargs)
+			self.conv2_1 = L.Convolution2D(64, 128, 3, 1, 1)
+			self.conv2_2 = L.Convolution2D(128, 128, 3, 1, 1)
 
-			self.conv3_1 = L.Convolution2D(128, 256, 3, 1, 1, **kwargs)
-			self.conv3_2 = L.Convolution2D(256, 256, 3, 1, 1, **kwargs)
-			self.conv3_3 = L.Convolution2D(256, 256, 3, 1, 1, **kwargs)
+			self.conv3_1 = L.Convolution2D(128, 256, 3, 1, 1)
+			self.conv3_2 = L.Convolution2D(256, 256, 3, 1, 1)
+			self.conv3_3 = L.Convolution2D(256, 256, 3, 1, 1)
 
-			self.conv4_1 = L.Convolution2D(256, 512, 3, 1, 1, **kwargs)
-			self.conv4_2 = L.Convolution2D(512, 512, 3, 1, 1, **kwargs)
-			self.conv4_3 = L.Convolution2D(512, 512, 3, 1, 1, **kwargs)
+			self.conv4_1 = L.Convolution2D(256, 512, 3, 1, 1)
+			self.conv4_2 = L.Convolution2D(512, 512, 3, 1, 1)
+			self.conv4_3 = L.Convolution2D(512, 512, 3, 1, 1)
 
-			self.conv5_1 = L.Convolution2D(512, 512, 3, 1, 1, **kwargs)
-			self.conv5_2 = L.Convolution2D(512, 512, 3, 1, 1, **kwargs)
-			self.conv5_3 = L.Convolution2D(512, 512, 3, 1, 1, **kwargs)
+			self.conv5_1 = L.Convolution2D(512, 512, 3, 1, 1)
+			self.conv5_2 = L.Convolution2D(512, 512, 3, 1, 1)
+			self.conv5_3 = L.Convolution2D(512, 512, 3, 1, 1)
 
-			self.fc6 = L.Convolution2D(512, 4096, 7, 1, 0, **kwargs)
-			self.fc7 = L.Convolution2D(4096, 4096, 1, 1, 0, **kwargs)
-			self.score_fr = L.Convolution2D(4096, n_class, 1, 1, 0, **kwargs)
+			self.fc6 = L.Convolution2D(512, 4096, 7, 1, 0)
+			self.fc7 = L.Convolution2D(4096, 4096, 1, 1, 0)
+			self.score_fr = L.Convolution2D(4096, n_class, 1, 1, 0)
 
 			self.fc6_cl = L.Linear(512, 4096)
 			self.fc7_cl = L.Linear(4096, 4096)
-			self.score_cl = L.Linear(4096, n_class)
+			self.score_cl = L.Linear(4096, n_class-1) # Disregard 0 class for classification
 
 
 			self.upscore2 = L.Deconvolution2D(
@@ -58,14 +59,50 @@ class FCN8s(GAIN):
 				n_class, n_class, 16, 8, 0, nobias=True,
 				initialW=initializers.UpsamplingDeconvWeight())
 
-			self.score_pool3 = L.Convolution2D(256, n_class, 1, 1, 0, **kwargs)
-			self.score_pool4 = L.Convolution2D(512, n_class, 1, 1, 0, **kwargs)
+			self.score_pool3 = L.Convolution2D(256, n_class, 1, 1, 0)
+			self.score_pool4 = L.Convolution2D(512, n_class, 1, 1, 0)
 			self.upscore_pool4 = L.Deconvolution2D(
 				n_class, n_class, 4, 2, 0, nobias=True,
 				initialW=initializers.UpsamplingDeconvWeight())
 
+		self.GAIN_functions = collections.OrderedDict([
+			('conv1_1', [self.conv1_1, F.relu]),
+			('conv1_2', [self.conv1_2, F.relu]),
+			('pool1', [_max_pooling_2d]),
+
+			('conv2_1', [self.conv2_1, F.relu]),
+			('conv2_2', [self.conv2_2, F.relu]),
+			('pool2', [_max_pooling_2d]),
+
+			('conv3_1', [self.conv3_1, F.relu]),
+			('conv3_2', [self.conv3_2, F.relu]),
+			('conv3_3', [self.conv3_3, F.relu]),
+			('pool3', [_max_pooling_2d]),
+
+			('conv4_1', [self.conv4_1, F.relu]),
+			('conv4_2', [self.conv4_2, F.relu]),
+			('conv4_3', [self.conv4_3, F.relu]),
+			('pool4', [_max_pooling_2d]),
+
+			('conv3_1', [self.conv5_1, F.relu]),
+			('conv3_2', [self.conv5_2, F.relu]),
+			('conv3_3', [self.conv5_3, F.relu]),
+			('pool5', [_max_pooling_2d]),
+
+			('avg_pool', [_average_pooling_2d]),
+
+			('fc6_cl', [self.fc6_cl, F.relu]),
+			('fc7_cl', [self.fc7_cl, F.relu]),
+			('prob', [self.score_cl, F.sigmoid])
+
+		])
+		self.final_conv_layer = 'avg_pool'
+		self.grad_target_layer = 'prob'
+		self.freezed_layers = ['fc6_cl', 'fc7_cl', 'score_cl']
+
 	def segment(self, x, t=None):
 		# conv1
+		self.conv1_1.pad = (100, 100)
 		h = F.relu(self.conv1_1(x))
 		conv1_1 = h
 		h = F.relu(self.conv1_2(conv1_1))
@@ -168,16 +205,17 @@ class FCN8s(GAIN):
 			assert not chainer.config.train
 			return
 
-		loss = F.softmax_cross_entropy(score, t, normalize=False)
+		loss = F.softmax_cross_entropy(score, t, normalize=True)
 		if np.isnan(float(loss.data)):
 			raise ValueError('Loss is nan.')
 		chainer.report({'loss': loss}, self)
+		self.conv1_1.pad = (1, 1)
 		return loss
 
-	def classify(self, x, is_training=True):
 
-		# convv1
+	def classify(self, x, is_training=True):
 		with chainer.no_backprop_mode():
+			# convv1
 			h = F.relu(self.conv1_1(x))
 			h = F.relu(self.conv1_2(h))
 			h = _max_pooling_2d(h)
@@ -209,9 +247,13 @@ class FCN8s(GAIN):
 		with chainer.using_config('train',is_training):
 			h = F.relu(F.dropout(self.fc6_cl(h), .5))
 			h = F.relu(F.dropout(self.fc7_cl(h), .5))
-			h = F.dropout(self.score_cl(h), .5)
+			h = self.score_cl(h)
 
 		return h
+
+
+	def __call__(self, x, t=None):
+		return self.segment(x, t)
 
 	@classmethod
 	def download(cls):
