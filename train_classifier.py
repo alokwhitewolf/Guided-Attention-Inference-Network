@@ -11,8 +11,7 @@ from chainer.optimizers import Adam
 from updater import VOC_ClassificationUpdater
 
 def main():
-	parser = argparse.ArgumentParser(
-	formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+	parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 	parser.add_argument('--gpu', type=int, default=0, help='gpu id')
 	parser.add_argument('--modelfile', help='pretrained model file of FCN8')
 	parser.add_argument('--lr', type=float, default=5*1e-4, help='init learning rate')

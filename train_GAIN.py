@@ -96,4 +96,7 @@ def main():
 	print('lambd3', lambd3)
 	trainer.run()
 
+if __name__ == "__main__":
+	main()
+
 
