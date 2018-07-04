@@ -33,17 +33,7 @@ class GAIN(chainer.Chain):
 		return h
 
 	def stream_ext(self, inp):
-		h = chainer.Variable(inp)
-		for key, funcs in self.GAIN_functions.items():
-			for func in funcs:
-				h = func(h)
-			if key == self.final_conv_layer:
-				activation = h
-			if key == self.grad_target_layer:
-				break
-			gcam = self.get_gcam(h, activation)
-			mask = self.get_mask(gcam)
-			return mask
+		raise NotImplementedError
 
 	def get_gcam(self, end_output, activations, shape, label):
 		self.cleargrads()
@@ -78,7 +68,7 @@ class GAIN(chainer.Chain):
 
 
 	@staticmethod
-	def get_mask(gcam, sigma=.5, w=8): # .1, 4
+	def get_mask(gcam, sigma=.5, w=8):
 		gcam = (gcam - F.min(gcam).data)/(F.max(gcam) - F.min(gcam)).data
 		mask = F.squeeze(F.sigmoid(w * (gcam - sigma)))
 		return mask
