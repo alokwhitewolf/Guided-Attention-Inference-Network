@@ -1,8 +1,8 @@
 # Guided Attention for FCN
 
 ## About
-Chainer implementation of Tell Me Where To Look.
-This is an experiment to apply Guided Attention Inference Network(GAIN) as presented in <a href='https://arxiv.org/abs/1802.10171'>Tell Me Where To Look</a>to Fully Convolutional Networks(FCN) used for segmentation purposes. The trained FCN8s model is fine tuned using guided attention.
+Chainer implementation of <a href='https://arxiv.org/abs/1802.10171'>Tell Me Where To Look</a>.
+This is an experiment to apply Guided Attention Inference Network(GAIN) as presented in the paper to Fully Convolutional Networks(FCN) used for segmentation purposes. The trained FCN8s model is fine tuned using guided attention.
 
 ## GAIN
  GAIN is based on supervising the attention maps that is produced when we train the network for
@@ -57,7 +57,7 @@ GAIN updates/loss. This is because, I found using only the GAIN updates though d
 ## How to use
 ```bash
 pip install chainer
-pip install chaibercv
+pip install chainercv
 pip install cupy
 pip install fcn
 ```
