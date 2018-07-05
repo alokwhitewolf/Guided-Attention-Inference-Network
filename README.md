@@ -2,7 +2,7 @@
 
 ## About
 Chainer implementation of Tell Me Where To Look.
-This is an experiment to apply Guided Attention Inference Network(GAIN) to Fully Convolutional Networks(FCN) used for segmentation purposes. The trained FCN8s model is fine tuned using guided attention.
+This is an experiment to apply Guided Attention Inference Network(GAIN) as presented in <a href='https://arxiv.org/abs/1802.10171'>Tell Me Where To Look</a>to Fully Convolutional Networks(FCN) used for segmentation purposes. The trained FCN8s model is fine tuned using guided attention.
 
 ## GAIN
  GAIN is based on supervising the attention maps that is produced when we train the network for
@@ -22,7 +22,7 @@ train the fully connected networks to classify for the objects. We do this in or
 ![Image](media/modification.jpg)
 
 * Next we train the network as per the GAIN update rule. However in this implementation I have also  considered the segmentation loss along with the
-GAIN updates/loss. This is because, I found using only the GAIN updates though did lead to convergence of losses, but also resulted in quite a significant dip in segmentation accuracies. Also, the fully connected ayers are freezed and are not updated during this step.
+GAIN updates/loss. This is because, I found using only the GAIN updates though did lead to convergence of losses, but also resulted in quite a significant dip in segmentation accuracies. In this step, the fully connected ayers are freezed and are not updated.
 
 ## Loss Curves
 ### For classification training
