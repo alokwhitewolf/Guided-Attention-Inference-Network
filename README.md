@@ -34,7 +34,7 @@ GAIN updates/loss. This is because, I found using only the GAIN updates though d
 
 ## Qualitative Results
 | Original Image | PreTrained GCAMs | Post GAIN GCAMs |
-|:-------------:|:--------:|:--------------:|
+
 ![Image](media/example2.png)
 
 ![Image](media/example3.png)
@@ -52,7 +52,7 @@ GAIN updates/loss. This is because, I found using only the GAIN updates though d
 | Implementation | Accuracy | Accuracy Class | Mean IU | FWAVACC | Model File |
 |:--------------:|:--------:|:--------------:|:-------:|:-------:|:----------:|
 | [Original](https://github.com/shelhamer/fcn.berkeleyvision.org/tree/master/voc-fcn8s) | 91.2212 | 77.6146 | 65.5126 | 84.5445 | [`fcn8s_from_caffe.npz`](https://drive.google.com/uc?id=0B9P1L--7Wd2vb0cxV0VhcG1Lb28) |
-| Experimental| 90.5962 | **80.4099** | 64.6869 | 83.9952 | [`model.npz`]() |
+| Experimental| 90.5962 | **80.4099** | 64.6869 | 83.9952 | **To make public soon** |
 
 ## How to use
 ```bash
@@ -72,7 +72,9 @@ For GAIN updates,
 train_GAIN.py --mmodelfile <path to the trained model with trained classifier>
 ```
 
-The accuracy of original implementation is computed with (`evaluate.py`)
+The accuracy of original implementation is computed with (`evaluate.py <path to the trained fcn8 model>`) which has been borrowed from wkentaro's <a href='https://github.com/wkentaro/fcn'>implementation</a>
+
+You might run into an error of " xxx.txt file not found " while running this script. To solve this, at the place where your `fcn` library is installed, get the missing file from the <a href='https://github.com/wkentaro/fcn'>fcn</a> repository over github, and take care to put the exisiting file by making the same directory structure as asked in the error message.
 ## To Do
 [x] Finetune hyperparameters
 
