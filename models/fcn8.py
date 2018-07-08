@@ -7,7 +7,6 @@ import chainer.links as L
 import numpy as np
 from GAIN import GAIN
 
-import fcn
 from fcn import data
 from fcn import initializers
 
@@ -96,7 +95,7 @@ class FCN8s(GAIN):
 			('prob', [self.score_cl, F.sigmoid])
 
 		])
-		self.final_conv_layer = 'avg_pool'
+		self.final_conv_layer = 'conv3_3'
 		self.grad_target_layer = 'prob'
 		self.freezed_layers = ['fc6_cl', 'fc7_cl', 'score_cl']
 
