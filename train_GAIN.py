@@ -15,12 +15,12 @@ def main():
 	parser.add_argument('--gpu', type=int, default=0, help='gpu id')
 	parser.add_argument('--modelfile', help='pretrained model file of FCN8')
 	parser.add_argument('--lr', type=float, default=1e-7, help='init learning rate')
-	parser.add_argument('--name', type=str, default='exp', help='init learning rate')
+	parser.add_argument('--name', type=str, default='exp', help='name of the experiment')
 	parser.add_argument('--resume', type=int, default=0, help='resume training or not')
 	parser.add_argument('--snapshot', type=str, help='snapshot file to resume from')
-	parser.add_argument('--lambda1', default=5, type=float, help='snapshot file to resume from')
-	parser.add_argument('--lambda2', default=1, type=float, help='snapshot file to resume from')
-	parser.add_argument('--lambda3', default=1.5, type=float, help='snapshot file to resume from')
+	parser.add_argument('--lambda1', default=5, type=float, help='lambda1 param')
+	parser.add_argument('--lambda2', default=1, type=float, help='lambda2 param')
+	parser.add_argument('--lambda3', default=1.5, type=float, help='lambda3 param')
 
 	args = parser.parse_args()
 
@@ -34,8 +34,8 @@ def main():
 	else:
 		pretrained_model_path = args.modelfile
 
-	experiment = '_GAIN_exp16'
-	lr = 1e-7
+	experiment = args.name
+	lr = args.lr
 	optim = Adam
 	training_interval = (20000, 'iteration')
 	snapshot_interval = (1000, 'iteration')
