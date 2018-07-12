@@ -82,3 +82,15 @@ You might run into an error of " xxx.txt file not found " while running this scr
 
 ## Credits
 The original FCN module and the fcn package is courtesy of <a href='https://github.com/wkentaro/fcn'>wkentaro</a>
+
+## Citation
+If you find this code useful in your research, please consider citing:
+
+    @misc{Alok2018,
+	Author = {Alok kumar Bishoyi},
+	Title = {Guided Attention Inference Network},
+	Year = {2018},
+	Publisher = {GitHub},
+	journal = {Github repository},
+	howpublished = {\url{https://github.com/alokwhitewolf/Guided-Attention-Inference-Network}},
+    }
