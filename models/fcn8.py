@@ -13,9 +13,6 @@ from fcn import initializers
 
 class FCN8s(GAIN):
 
-	pretrained_model = osp.expanduser(
-		'~/data/models/chainer/fcn8s_from_caffe.npz')
-
 	def __init__(self, n_class=21):
 		self.n_class = n_class
 		kwargs = {
@@ -83,9 +80,9 @@ class FCN8s(GAIN):
 			('conv4_3', [self.conv4_3, F.relu]),
 			('pool4', [_max_pooling_2d]),
 
-			('conv3_1', [self.conv5_1, F.relu]),
-			('conv3_2', [self.conv5_2, F.relu]),
-			('conv3_3', [self.conv5_3, F.relu]),
+			('conv5_1', [self.conv5_1, F.relu]),
+			('conv5_2', [self.conv5_2, F.relu]),
+			('conv5_3', [self.conv5_3, F.relu]),
 			('pool5', [_max_pooling_2d]),
 
 			('avg_pool', [_average_pooling_2d]),
@@ -95,7 +92,7 @@ class FCN8s(GAIN):
 			('prob', [self.score_cl, F.sigmoid])
 
 		])
-		self.final_conv_layer = 'conv3_3'
+		self.final_conv_layer = 'conv5_3'
 		self.grad_target_layer = 'prob'
 		self.freezed_layers = ['fc6_cl', 'fc7_cl', 'score_cl']
 
@@ -213,8 +210,8 @@ class FCN8s(GAIN):
 
 
 	def classify(self, x, is_training=True):
-		with chainer.no_backprop_mode():
-			# convv1
+		with chainer.using_config('train',False):
+			# conv1
 			h = F.relu(self.conv1_1(x))
 			h = F.relu(self.conv1_2(h))
 			h = _max_pooling_2d(h)
@@ -254,13 +251,6 @@ class FCN8s(GAIN):
 	def __call__(self, x, t=None):
 		return self.segment(x, t)
 
-	@classmethod
-	def download(cls):
-		return data.cached_download(
-			url='https://drive.google.com/uc?id=0B9P1L--7Wd2vb0cxV0VhcG1Lb28',
-			path=cls.pretrained_model,
-			md5='256c2a8235c1c65e62e48d3284fbd384',
-		)
 
 	def predict(self, imgs):
 		lbls = []
