@@ -100,6 +100,15 @@ optional arguements -
 
 - [x] Push Visualization Code
 
+## Using GAIN for other models
+I have attempted to make GAIN as modular as possible so that it can be used on some other model as well. All you would need to do is make GAIN class( which itself inherits chainer.Chain) as parent class to your model. 
+Each GAIN model needs to have a few particular instance variables in order to be able to function. GAIN module has methods to instantiate every single one of them. I would advice you to lookup ```models/fcn8.py``` as well as ```GAIN.py``` to have an idea about them.
+
+* GAIN_functions - An ordered dict consisting of names of steps and it's associated functions. 
+* final_conv_layer - Name of the step after which no convolutions happen
+* grad_target_layer - Name of the step from where gradients are to be collected for computing GradCAM
+
+
 ## Credits
 The original FCN module and the fcn package is courtesy of <a href='https://github.com/wkentaro/fcn'>wkentaro</a>
 
