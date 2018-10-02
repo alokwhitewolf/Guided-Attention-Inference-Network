@@ -16,7 +16,6 @@ matplotlib.use('Agg')
 def main():
 	parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 	parser.add_argument('--device', type=int, default=-1, help='gpu id')
-	parser.add_argument('--modelfile', help='pretrained model file of FCN8')
 	parser.add_argument('--lr_init', type=float, default=5*1e-5, help='init learning rate')
 	# parser.add_argument('--lr_trigger', type=float, default=5, help='trigger to decreace learning rate')
 	# parser.add_argument('--lr_target', type=float, default=5*1e-5, help='target learning rate')
@@ -32,8 +31,6 @@ def main():
 
 	if resume:
 		load_snapshot_path = args.snapshot
-		load_model_path = args.modelfile
-
 
 	experiment = args.name
 	lr_init = args.lr_init
