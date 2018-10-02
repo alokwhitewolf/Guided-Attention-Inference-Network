@@ -7,7 +7,7 @@ from chainer.iterators import SerialIterator
 from chainer.training.trainer import Trainer
 from chainer.training import extensions
 from chainer.optimizers import Adam
-from updater import VOC_GAIN_Updater2
+from updater import VOC_GAIN_Updater
 
 def main():
 	parser = argparse.ArgumentParser(
@@ -42,7 +42,7 @@ def main():
 	lambd1 = args.lambda1
 	lambd2 = args.lambda2
 	lambd3 = args.lambda3
-	updtr = VOC_GAIN_Updater2
+	updtr = VOC_GAIN_Updater
 
 	os.makedirs('result/'+experiment, exist_ok=True)
 	f = open('result/'+experiment+'/details.txt', "w+")
