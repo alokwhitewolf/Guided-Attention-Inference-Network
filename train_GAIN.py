@@ -12,7 +12,7 @@ from updater import VOC_GAIN_Updater
 def main():
 	parser = argparse.ArgumentParser(
 	formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-	parser.add_argument('--device', type=int, default=0, help='gpu id')
+	parser.add_argument('--device', type=int, default=-1, help='gpu id')
 	parser.add_argument('--modelfile', help='pretrained model file of FCN8')
 	parser.add_argument('--lr', type=float, default=1e-7, help='init learning rate')
 	parser.add_argument('--name', type=str, default='GAIN', help='name of the experiment')
