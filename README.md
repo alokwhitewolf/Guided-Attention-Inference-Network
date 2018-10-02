@@ -63,22 +63,42 @@ pip install fcn
 ```
 Training
 --------
-For training the classifier, <a href='https://drive.google.com/uc?id=0B9P1L--7Wd2vWG5MeUEwWmxudU0'>download</a>. the pretrained FCN8s chainer model
+<s> For training the classifier, <a href='https://drive.google.com/uc?id=0B9P1L--7Wd2vWG5MeUEwWmxudU0'>download</a>. the pretrained FCN8s chainer model </s>
 ```bash
-train_classifier.py --modelfile <path to the downloaded pre trained model>
+train_classifier.py 
 ```
+This will automatically download the pretrained file and train the classifier on it. You might run into an error of " xxx.txt file not found " while running this script. To solve this, at the place where your `fcn` library is installed, get the missing file from the <a href='https://github.com/wkentaro/fcn'>fcn</a> repository over github, and take care to put the exisiting file by making the same directory structure as asked in the error message. For more details, refer to this <a href='https://github.com/wkentaro/fcn/issues/111'>issue</a>
+
+
 For GAIN updates,
 ```bash
-train_GAIN.py --mmodelfile <path to the trained model with trained classifier>
+train_GAIN.py --modelfile <path to the trained model with trained classifier> --device 0
 ```
 
 The accuracy of original implementation is computed with (`evaluate.py <path to the trained fcn8 model>`) which has been borrowed from wkentaro's <a href='https://github.com/wkentaro/fcn'>implementation</a>
 
-You might run into an error of " xxx.txt file not found " while running this script. To solve this, at the place where your `fcn` library is installed, get the missing file from the <a href='https://github.com/wkentaro/fcn'>fcn</a> repository over github, and take care to put the exisiting file by making the same directory structure as asked in the error message.
-## To Do
-[x] Finetune hyperparameters
+Visualization
+-------------
+```bash
+visualize.py 
+```
+required arguements - 
+ ```
+  --pretrained <path to the model file with trained classifier but not trained through GAIN method>
+  --trained <path to the model trained with GAIN>
+ ```
 
-[x] Push Visualization Code
+optional arguements - 
+```
+  --device=-1 <device to assign to model, default uses cpu>
+  --whole=False < whether to test on whole valid dataset>
+  --shuffle=False <shuffles fataset loader>
+  --no=10 <if whole is False, then no of images to visualize>
+```
+
+## To Do
+
+- [x] Push Visualization Code
 
 ## Credits
 The original FCN module and the fcn package is courtesy of <a href='https://github.com/wkentaro/fcn'>wkentaro</a>
@@ -87,7 +107,7 @@ The original FCN module and the fcn package is courtesy of <a href='https://gith
 If you find this code useful in your research, please consider citing:
 
     @misc{Alok2018,
-	Author = {Alok kumar Bishoyi},
+	Author = {Bishoyi, Alok Kumar},
 	Title = {Guided Attention Inference Network},
 	Year = {2018},
 	Publisher = {GitHub},
