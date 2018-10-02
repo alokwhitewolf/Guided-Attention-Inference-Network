@@ -15,7 +15,7 @@ def main():
 	parser.add_argument('--gpu', type=int, default=0, help='gpu id')
 	parser.add_argument('--modelfile', help='pretrained model file of FCN8')
 	parser.add_argument('--lr', type=float, default=1e-7, help='init learning rate')
-	parser.add_argument('--name', type=str, default='exp', help='name of the experiment')
+	parser.add_argument('--name', type=str, default='GAIN', help='name of the experiment')
 	parser.add_argument('--resume', type=int, default=0, help='resume training or not')
 	parser.add_argument('--snapshot', type=str, help='snapshot file to resume from')
 	parser.add_argument('--lambda1', default=5, type=float, help='lambda1 param')
@@ -77,8 +77,11 @@ def main():
 	trainer.extend(extensions.LogReport(log_keys, (10, 'iteration'), log_name='log'+experiment))
 	trainer.extend(extensions.PrintReport(log_keys), trigger=(100, 'iteration'))
 	trainer.extend(extensions.ProgressBar(training_length=training_interval, update_interval=100))
-	trainer.extend(extensions.snapshot(filename='snapshot'+experiment), trigger=snapshot_interval)
-	trainer.extend(extensions.snapshot_object(trainer.updater._optimizers['main'].target, "model"+experiment), trigger=snapshot_interval)
+	
+	trainer.extend(extensions.snapshot(filename=experiment+'_snapshot_{.updater.iteration}'), trigger=snapshot_interval)
+	trainer.extend(extensions.snapshot_object(trainer.updater._optimizers['main'].target, 
+		experiment+'_model_{.updater.iteration}'), trigger=snapshot_interval)
+	
 	trainer.extend(extensions.PlotReport(['main/AM_Loss'], 'iteration',(20, 'iteration'), file_name=experiment+'/am_loss.png', grid=True, marker=" "))
 	trainer.extend(extensions.PlotReport(['main/CL_Loss'], 'iteration',(20, 'iteration'), file_name=experiment+'/cl_loss.png', grid=True, marker=" "))
 	trainer.extend(
