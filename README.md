@@ -65,14 +65,14 @@ Training
 --------
 <s> For training the classifier, <a href='https://drive.google.com/uc?id=0B9P1L--7Wd2vWG5MeUEwWmxudU0'>download</a>. the pretrained FCN8s chainer model </s>
 ```bash
-train_classifier.py --device 0
+python3 train_classifier.py --device 0
 ```
 This will automatically download the pretrained file and train the classifier on it. You might run into an error of " xxx.txt file not found " while running this script. To solve this, at the place where your `fcn` library is installed, get the missing file from the <a href='https://github.com/wkentaro/fcn'>fcn</a> repository over github, and take care to put the exisiting file by making the same directory structure as asked in the error message. For more details, refer to this <a href='https://github.com/wkentaro/fcn/issues/111'>issue</a>
 
 
 For GAIN updates,
 ```bash
-train_GAIN.py --modelfile <path to the trained model with trained classifier> --device 0
+python3 train_GAIN.py --modelfile <path to the trained model with trained classifier> --device 0
 ```
 
 The accuracy of original implementation is computed with (`evaluate.py <path to the trained fcn8 model>`) which has been borrowed from wkentaro's <a href='https://github.com/wkentaro/fcn'>implementation</a>
