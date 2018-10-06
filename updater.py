@@ -39,7 +39,7 @@ class VOC_ClassificationUpdater(StandardUpdater):
 class VOC_GAIN_Updater(StandardUpdater):
 
 	def __init__(self, iterator, optimizer, no_of_classes=20, device=-1, lambd1=1.5, lambd2=1, lambd3=1.5):
-		super(VOC_GAIN_Updater2, self).__init__(iterator, optimizer)
+		super(VOC_GAIN_Updater, self).__init__(iterator, optimizer)
 		self.device = device
 		self.no_of_classes = no_of_classes
 		self.lambd1 = lambd1
