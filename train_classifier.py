@@ -43,7 +43,7 @@ def main():
 	f = open('result/'+experiment+'/details.txt',"w+")
 	f.write("lr - "+str(lr_init)+"\n")
 	f.write("optimizer - "+str(Adam))
-	f.write("lr_trigger_interval - "+str(lr_trigger_interval)+"\n")
+	# f.write("lr_trigger_interval - "+str(lr_trigger_interval)+"\n")
 	f.close()
 
 	if not resume:
@@ -76,7 +76,7 @@ def main():
 	trainer.extend(extensions.PrintReport(log_keys), trigger=(100, 'iteration'))
 	trainer.extend(extensions.snapshot(filename=experiment+"_snapshot_{.updater.iteration}"), trigger=(5, 'epoch'))
 	trainer.extend(extensions.snapshot_object(trainer.updater._optimizers['main'].target, experiment+"_model_{.updater.iteration}"), trigger=(5, 'epoch'))
-	trainer.extend(extensions.PlotReport(['main/Loss'], 'iteration',(100, 'iteration'), file_name='trainer_'experiment+'/loss.png', grid=True, marker=" "))
+	trainer.extend(extensions.PlotReport(['main/Loss'], 'iteration',(100, 'iteration'), file_name='trainer_'+experiment+'/loss.png', grid=True, marker=" "))
 	
 	# trainer.extend(extensions.ExponentialShift('lr', lr_factor, target=lr_target), trigger=lr_trigger_interval)
 	if resume:
@@ -84,7 +84,7 @@ def main():
 	
 	print("Running - - ", experiment)
 	print('initial lr ', lr_init)
-	print('lr_trigger_interval ', lr_trigger_interval)
+	# print('lr_trigger_interval ', lr_trigger_interval)
 	trainer.run()
 
 if __name__ =="__main__":
